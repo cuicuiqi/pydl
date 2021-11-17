@@ -1,0 +1,26 @@
+<annotation>
+	<folder>eval</folder>
+	<filename>f998bd6a6320e3cef1ffe44c765e3d3f.jpeg</filename>
+	<path>/Users/felix/Documents/code_base/pydl/cv/15_对象检测/02_tf2_od_coco_finetune/images/eval/f998bd6a6320e3cef1ffe44c765e3d3f.jpeg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>650</width>
+		<height>396</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>hsrw</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>28</xmin>
+			<ymin>134</ymin>
+			<xmax>431</xmax>
+			<ymax>317</ymax>
+		</bndbox>
+	</object>
+</annotation>

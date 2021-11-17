@@ -1,0 +1,26 @@
+<annotation>
+	<folder>train</folder>
+	<filename>df7a32753a3b694e7fcfa52368818d35.jpeg</filename>
+	<path>/Users/felix/Documents/code_base/pydl/cv/15_对象检测/02_tf2_od_coco_finetune/images/train/df7a32753a3b694e7fcfa52368818d35.jpeg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>860</width>
+		<height>574</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>hsrw</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>286</xmin>
+			<ymin>212</ymin>
+			<xmax>721</xmax>
+			<ymax>487</ymax>
+		</bndbox>
+	</object>
+</annotation>
