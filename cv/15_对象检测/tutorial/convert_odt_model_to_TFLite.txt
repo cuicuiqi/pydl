@@ -1,0 +1,114 @@
+#@title Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+!pip install -q tflite_support
+
+import os
+import pathlib
+
+# Clone the tensorflow models repository if it doesn't already exist
+if "models" in pathlib.Path.cwd().parts:
+  while "models" in pathlib.Path.cwd().parts:
+    os.chdir('..')
+elif not pathlib.Path('models').exists():
+  !git clone --depth 1 https://github.com/tensorflow/models
+
+%%bash
+cd models/research/
+protoc object_detection/protos/*.proto --python_out=.
+cp object_detection/packages/tf2/setup.py .
+pip install -q .
+
+import matplotlib
+import matplotlib.pyplot as plt
+
+import os
+import random
+import io
+import imageio
+import glob
+import scipy.misc
+import numpy as np
+from six import BytesIO
+from PIL import Image, ImageDraw, ImageFont
+from IPython.display import display, Javascript
+from IPython.display import Image as IPyImage
+
+import tensorflow as tf
+
+from object_detection.utils import label_map_util
+from object_detection.utils import config_util
+from object_detection.utils import visualization_utils as viz_utils
+from object_detection.utils import colab_utils
+from object_detection.utils import config_util
+from object_detection.builders import model_builder
+
+%matplotlib inline
+
+!wget http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8.tar.gz
+!tar -xf ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8.tar.gz
+!rm ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8.tar.gz
+
+!python models/research/object_detection/export_tflite_graph_tf2.py \
+    --trained_checkpoint_dir {'ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8/checkpoint'} \
+    --output_directory {'ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8/tflite'} \
+    --pipeline_config_path {'ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8/pipeline.config'}
+
+_TFLITE_MODEL_PATH = "ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8/model.tflite"
+
+converter = tf.lite.TFLiteConverter.from_saved_model('ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8/tflite/saved_model')
+converter.optimizations = [tf.lite.Optimize.DEFAULT]
+tflite_model = converter.convert()
+
+with open(_TFLITE_MODEL_PATH, 'wb') as f:
+  f.write(tflite_model)
+
+# Download the COCO dataset label map that was used to trained the SSD MobileNet V2 FPNLite 640x640 model
+!wget https://raw.githubusercontent.com/tensorflow/models/master/research/object_detection/data/mscoco_label_map.pbtxt -q
+
+# We need to convert the Object Detection API's labelmap into what the Task API needs:
+# a txt file with one class name on each line from index 0 to N.
+# The first '0' class indicates the background.
+# This code assumes COCO detection which has 90 classes, you can write a label
+# map file for your model if re-trained.
+_ODT_LABEL_MAP_PATH = 'mscoco_label_map.pbtxt'
+_TFLITE_LABEL_PATH = "ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8/tflite_label_map.txt"
+
+category_index = label_map_util.create_category_index_from_labelmap(
+    _ODT_LABEL_MAP_PATH)
+f = open(_TFLITE_LABEL_PATH, 'w')
+for class_id in range(1, 91):
+  if class_id not in category_index:
+    f.write('???\n')
+    continue
+  name = category_index[class_id]['name']
+  f.write(name+'\n')
+f.close()
+
+from tflite_support.metadata_writers import object_detector
+from tflite_support.metadata_writers import writer_utils
+
+_TFLITE_MODEL_WITH_METADATA_PATH = "ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8/model_with_metadata.tflite"
+
+writer = object_detector.MetadataWriter.create_for_inference(
+    writer_utils.load_file(_TFLITE_MODEL_PATH), input_norm_mean=[127.5], 
+    input_norm_std=[127.5], label_file_paths=[_TFLITE_LABEL_PATH])
+writer_utils.save_file(writer.populate(), _TFLITE_MODEL_WITH_METADATA_PATH)
+
+from tflite_support import metadata
+
+displayer = metadata.MetadataDisplayer.with_model_file(_TFLITE_MODEL_WITH_METADATA_PATH)
+print("Metadata populated:")
+print(displayer.get_metadata_json())
+print("=============================")
+print("Associated file(s) populated:")
+print(displayer.get_packed_associated_file_list())

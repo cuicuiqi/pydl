@@ -1,0 +1,188 @@
+import tensorflow as tf
+
+# Install the tensorflow Object Detection API...
+# If you're running this offline, you also might need to install the protobuf-compiler:
+#   apt-get install protobuf-compiler
+
+! git clone -n https://github.com/tensorflow/models.git
+%cd models
+!git checkout 461b3587ef38b42cda151fa3b7d37706d77e4244
+%cd research
+! protoc object_detection/protos/*.proto --python_out=.
+
+# Install TensorFlow Object Detection API
+%cp object_detection/packages/tf2/setup.py .
+! python -m pip install --upgrade pip
+! python -m pip install --use-feature=2020-resolver .
+
+# Test the installation
+! python object_detection/builders/model_builder_tf2_test.py
+
+%mkdir /content/dataset
+%cd /content/dataset
+! wget http://www.robots.ox.ac.uk/~vgg/data/pets/data/images.tar.gz
+! wget http://www.robots.ox.ac.uk/~vgg/data/pets/data/annotations.tar.gz
+! tar zxf images.tar.gz
+! tar zxf annotations.tar.gz
+
+! cp /content/dataset/annotations/list.txt /content/dataset/annotations/list_petsdataset.txt
+! cp /content/dataset/annotations/trainval.txt /content/dataset/annotations/trainval_petsdataset.txt
+! cp /content/dataset/annotations/test.txt /content/dataset/annotations/test_petsdataset.txt
+! grep "Abyssinian" /content/dataset/annotations/list_petsdataset.txt >  /content/dataset/annotations/list.txt
+! grep "american_bulldog" /content/dataset/annotations/list_petsdataset.txt >> /content/dataset/annotations/list.txt
+! grep "Abyssinian" /content/dataset/annotations/trainval_petsdataset.txt > /content/dataset/annotations/trainval.txt
+! grep "american_bulldog" /content/dataset/annotations/trainval_petsdataset.txt >> /content/dataset/annotations/trainval.txt
+! grep "Abyssinian" /content/dataset/annotations/test_petsdataset.txt > /content/dataset/annotations/test.txt
+! grep "american_bulldog" /content/dataset/annotations/test_petsdataset.txt >> /content/dataset/annotations/test.txt
+
+import sys
+import glob
+import numpy as np
+import xml.etree.ElementTree as ET
+
+from sklearn.cluster import KMeans
+
+def xml_to_boxes(path, classes, rescale_width=None, rescale_height=None):
+  """Extracts bounding-box widths and heights from ground-truth dataset.
+
+  Args:
+  path : Path to .xml annotation files for your dataset.
+  classes : List of classes that are part of dataset.
+  rescale_width : Scaling factor to rescale width of bounding box.
+  rescale_height : Scaling factor to rescale height of bounding box.
+
+  Returns:
+  bboxes : A numpy array with pairs of box dimensions as [width, height].
+  """
+
+  xml_list = []
+  for clss in classes:
+    for xml_file in glob.glob(path + '/'+clss+'*'):
+      if xml_file.endswith('.xml'):
+        tree = ET.parse(xml_file)
+        root = tree.getroot()
+        for member in root.findall('object'):
+          bndbox = member.find('bndbox')
+          bbox_width = int(bndbox.find('xmax').text) - int(bndbox.find('xmin').text)
+          bbox_height = int(bndbox.find('ymax').text) - int(bndbox.find('ymin').text)
+          if rescale_width and rescale_height:
+            size = root.find('size')
+            bbox_width = bbox_width * (rescale_width / int(size.find('width').text))
+            bbox_height = bbox_height * (rescale_height / int(size.find('height').text))
+
+          xml_list.append([bbox_width, bbox_height])
+      else:
+        continue
+  bboxes = np.array(xml_list)
+  return bboxes
+
+
+def average_iou(bboxes, anchors):
+    """Calculates the Intersection over Union (IoU) between bounding boxes and
+    anchors.
+
+    Args:
+    bboxes : Array of bounding boxes in [width, height] format.
+    anchors : Array of aspect ratios [n, 2] format.
+
+    Returns:
+    avg_iou_perc : A Float value, average of IOU scores from each aspect ratio
+    """
+    intersection_width = np.minimum(anchors[:, [0]], bboxes[:, 0]).T
+    intersection_height = np.minimum(anchors[:, [1]], bboxes[:, 1]).T
+
+    if np.any(intersection_width == 0) or np.any(intersection_height == 0):
+        raise ValueError("Some boxes have zero size.")
+
+    intersection_area = intersection_width * intersection_height
+    boxes_area = np.prod(bboxes, axis=1, keepdims=True)
+    anchors_area = np.prod(anchors, axis=1, keepdims=True).T
+    union_area = boxes_area + anchors_area - intersection_area
+    avg_iou_perc = np.mean(np.max(intersection_area / union_area, axis=1)) * 100
+
+    return avg_iou_perc
+
+def kmeans_aspect_ratios(bboxes, kmeans_max_iter, num_aspect_ratios):
+  """Calculate the centroid of bounding boxes clusters using Kmeans algorithm.
+
+  Args:
+  bboxes : Array of bounding boxes in [width, height] format.
+  kmeans_max_iter : Maximum number of iterations to find centroids.
+  num_aspect_ratios : Number of centroids to optimize kmeans.
+
+  Returns:
+  aspect_ratios : Centroids of cluster (optmised for dataset).
+  avg_iou_prec : Average score of bboxes intersecting with new aspect ratios.
+  """
+
+  assert len(bboxes), "You must provide bounding boxes"
+
+  normalized_bboxes = bboxes / np.sqrt(bboxes.prod(axis=1, keepdims=True))
+
+   # Using kmeans to find centroids of the width/height clusters
+  kmeans = KMeans(
+      init='random', n_clusters=num_aspect_ratios,random_state=0, max_iter=kmeans_max_iter)
+  kmeans.fit(X=normalized_bboxes)
+  ar = kmeans.cluster_centers_
+
+  assert len(ar), "Unable to find k-means centroid, try increasing kmeans_max_iter."
+
+  avg_iou_perc = average_iou(normalized_bboxes, ar)
+
+  if not np.isfinite(avg_iou_perc):
+    sys.exit("Failed to get aspect ratios due to numerical errors in k-means")
+
+  aspect_ratios = [w/h for w,h in ar]
+
+  return aspect_ratios, avg_iou_perc
+
+classes  = ['Abyssinian','american_bulldog']
+xml_path = '/content/dataset/annotations/xmls'
+
+# Tune this based on your accuracy/speed goals as described above
+num_aspect_ratios = 4 # can be [2,3,4,5,6]
+
+# Tune the iterations based on the size and distribution of your dataset
+# You can check avg_iou_prec every 100 iterations to see how centroids converge
+kmeans_max_iter = 500
+
+# These should match the training pipeline config ('fixed_shape_resizer' param)
+width = 320
+height = 320
+
+# Get the ground-truth bounding boxes for our dataset
+bboxes = xml_to_boxes(path=xml_path, classes=classes,
+                      rescale_width=width, rescale_height=height)
+
+aspect_ratios, avg_iou_perc =  kmeans_aspect_ratios(
+                                      bboxes=bboxes,
+                                      kmeans_max_iter=kmeans_max_iter,
+                                      num_aspect_ratios=num_aspect_ratios)
+
+aspect_ratios = sorted(aspect_ratios)
+
+print('Aspect ratios generated:', [round(ar,2) for ar in aspect_ratios])
+print('Average IOU with anchors:', avg_iou_perc)
+
+import tensorflow as tf
+from google.protobuf import text_format
+from object_detection.protos import pipeline_pb2
+
+pipeline = pipeline_pb2.TrainEvalPipelineConfig()
+config_path = '/content/models/research/object_detection/samples/configs/ssdlite_mobiledet_edgetpu_320x320_coco_sync_4x4.config'
+pipeline_save = '/content/ssdlite_mobiledet_edgetpu_320x320_custom_aspect_ratios.config'
+with tf.io.gfile.GFile(config_path, "r") as f:
+    proto_str = f.read()
+    text_format.Merge(proto_str, pipeline)
+pipeline.model.ssd.num_classes = 2
+while pipeline.model.ssd.anchor_generator.ssd_anchor_generator.aspect_ratios:
+  pipeline.model.ssd.anchor_generator.ssd_anchor_generator.aspect_ratios.pop()
+
+for i in range(len(aspect_ratios)):
+  pipeline.model.ssd.anchor_generator.ssd_anchor_generator.aspect_ratios.append(aspect_ratios[i])
+
+config_text = text_format.MessageToString(pipeline)
+with tf.io.gfile.GFile(pipeline_save, "wb") as f:
+    f.write(config_text)
+# Check for updated aspect ratios in the config
+!cat /content/ssdlite_mobiledet_edgetpu_320x320_custom_aspect_ratios.config

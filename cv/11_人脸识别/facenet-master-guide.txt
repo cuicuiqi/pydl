@@ -1,0 +1,136 @@
+
+
+# # FaceNet开源人脸特征提取库
+
+# In[ ]:
+
+
+# 下载facenet人脸特征提取开源库
+get_ipython().system('git clone https://github.com/21-projects-for-deep-learning/facenet')
+
+
+# In[39]:
+
+
+import os
+
+# 切换目录到facenet
+os.chdir('facenet')
+
+# 输出当前目录地址
+print(os.getcwd())
+
+
+# In[43]:
+
+
+# 设置环境变量
+os.environ["PYTHONPATH"] = "/content/facenet/src"
+
+# 查看环境变量
+print(os.environ["PYTHONPATH"])
+
+
+# In[ ]:
+
+
+# 将上面下载的lfw人脸数据图像移动到本级目录
+get_ipython().system('cp -r ../lfw data/lfw')
+
+
+# In[63]:
+
+
+get_ipython().system('ls')
+
+
+# In[ ]:
+
+
+# 处理图像
+# 对齐数据图像，就是将图像中有人脸的部分都标准大小处理
+get_ipython().system('python src/align/align_dataset_mtcnn.py data/lfw/ data/lfw_output/ --image_size 160 --margin 32 --random_order --gpu_memory_fraction 0.25 ')
+
+
+# In[ ]:
+
+
+# 验证已对齐的图像数据，查看验证分值
+get_ipython().system('python src/validate_on_lfw.py     data/lfw_output/     data/models/20180402-114759     --distance_metric 1     --use_flipped_images     --subtract_mean     --use_fixed_image_standardization')
+
+
+# # 用classifier.py文件训练我们自己的数据
+
+# In[ ]:
+
+
+# 对齐我们自己的数据
+get_ipython().system('python src/align/align_dataset_mtcnn.py     mydata/my_own_datasets/     mydata/my_own_datasets_output/     --image_size 160     --random_order     --gpu_memory_fraction 0.25 ')
+
+
+# In[ ]:
+
+
+# 训练
+get_ipython().system('python src/classifier.py   TRAIN   mydata/my_own_datasets_output   data/models/20180402-114759/   data/models/20180402-114759/myown_classifier.pkl   --image_size 160')
+
+
+# In[ ]:
+
+
+# 验证
+get_ipython().system('python src/classifier.py   CLASSIFY   mydata/my_own_datasets_output   data/models/20180402-114759/   data/models/20180402-114759/myown_classifier.pkl   --image_size 160')
+
+
+# # 用train_softmax.py文件训练我们自己的数据
+
+# In[ ]:
+
+
+os.chdir('mydata')
+
+# 生成pairs.txt文件
+get_ipython().system('python generate_pairs.py')
+
+os.chdir('../')
+
+
+# In[ ]:
+
+
+# 训练
+get_ipython().system('python src/train_softmax.py     --logs_base_dir my_lfw_train/logs/facenet/     --models_base_dir my_lfw_train/models/facenet/     --data_dir mydata/my_own_datasets_output/     --image_size 160     --model_def models.inception_resnet_v1     --lfw_dir mydata/my_own_datasets_output/     --optimizer ADAM     --learning_rate -1     --max_nrof_epochs 1     --keep_probability 0.8     --random_crop     --random_flip     --use_fixed_image_standardization     --learning_rate_schedule_file data/learning_rate_schedule_classifier_casia.txt     --weight_decay 5e-4     --embedding_size 512     --lfw_distance_metric 1     --lfw_use_flipped_images     --lfw_subtract_mean     --validation_set_split_ratio 0.05     --validate_every_n_epochs 5     --prelogits_norm_loss_factor 5e-4     --epoch_size 8     --lfw_batch_size 16     --lfw_pairs mydata/pairs.txt')
+
+
+# In[ ]:
+
+
+# 验证
+get_ipython().system('python src/validate_on_lfw.py   mydata/my_own_datasets_output \\ ')
+  my_lfw_train/models/facenet/20181107-034642 \
+  --lfw_pairs mydata/pairs.txt \
+  --lfw_batch_size 2 \
+  --image_size 160 \
+  --distance_metric 1 \
+  --use_flipped_images \
+  --subtract_mean \
+  --use_fixed_image_standardization
+
+
+# # 将checkpoint的文件转换成.pb文件
+
+# In[ ]:
+
+
+get_ipython().system('python src/freeze_graph.py \\ ')
+    my_lfw_train/models/facenet/20181107-034642 \
+    my_lfw_train/models/facenet/20181107-034642/20181107-034642.pb
+
+python src/freeze_graph.py my_lfw_train/models/facenet/20181107-034642 my_lfw_train/models/facenet/20181107-034642/20181107-034642.pb
+
+
+# In[ ]:
+
+
+
+

@@ -1,0 +1,38 @@
+Minst 手写数字识别.   卷积神经网络tf1.0
+
+cifar10 图片10分类
+
+Deepdream 图片生成
+
+9_手写数字识别   tf mlp cnn keras版本，模型保存
+
+14_皮肤癌分类.  keras组网，image读取、展示
+10_狗狗品种识别。keras组网，image读取，展示；现成的inceptionv3读取，微调
+
+
+*common_categary_test inception_v3通用图片分类，导出pb，使用tf114
+
+
+11_人脸识别
+使用opencv实现人脸识别：detectMultiScale
+基于facenet论文实现的tensorflow版本，提供了训练、预测脚本
+基于Face Recognition实现 人脸关键点识别face_landmarks
+基于Face Recognition实现 实时人脸识别：face_locations   人脸编码提取face_encodings 人脸对比compare_faces              
+Opencv摄像头读取和绘制
+
+
+12_人脸面部表情识别
+fer2013数据集，keras建立的一个图像分类模型，保护录像转录库，cv摄像头加标签名代码
+
+
+15_对象检测
+ COCO dataset, 日常生活
+ the Kitti dataset, 自动驾驶相关
+ the Open Images dataset, 各种东西，玩具，动物，水果等等
+ the AVA v2.1 dataset 人物动作
+ the iNaturalist Species Detection Dataset 自然界各种生物
+ and the Snapshot Serengeti Dataset。 盖伦蒂亚动物园野生动物
+
+
+
+

@@ -1,0 +1,1 @@
+Road’, ’City’, ’Residential’, ’Campus’ 和 ’Person
