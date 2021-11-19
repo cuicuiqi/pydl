@@ -1,5 +1,7 @@
 
 
+https://gilberttanner.com/blog/tensorflow-object-detection-with-tensorflow-2-creating-a-custom-model
+
 # train dataset
 python xml_to_csv.py
 
@@ -14,6 +16,11 @@ python generate_tfrecord.py --csv_input=img_csv/hsrw_eval_labels.csv --images_in
 #下载的模型要和configs/tf2/下的配置文件相对应，将配置文件copy到training下
 #如：
 #http://download.tensorflow.org/models/object_detection/tf2/20200711/efficientdet_d0_coco17_tpu-32.tar.gz
+
+
+
+#Change fine_tune_checkpoint_type to detection
+
 
 python ../object_detection/model_main_tf2.py --model_dir=training --pipeline_config_path=training/ssd_efficientdet_d0_512x512_coco17_tpu-8.config
 
