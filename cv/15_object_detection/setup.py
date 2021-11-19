@@ -15,14 +15,14 @@ REQUIRED_PACKAGES = [
     'matplotlib',
     'Cython',
     'contextlib2',
-    'tf-slim',
+    'tf-slim',#colab need
     'six',
     'pycocotools',
-    'lvis',
+    'lvis',#colab need
     'scipy',
     'pandas',
     'tf-models-official>=2.5.1',
-    'tensorflow_io',
+    'tensorflow_io',#colab need
     # Workaround due to
     # https://github.com/keras-team/keras/issues/15583
     'keras==2.6.0'
