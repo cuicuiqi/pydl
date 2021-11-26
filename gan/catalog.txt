@@ -1,0 +1,8 @@
+Dcgan 人脸生成 mnist手写数字生成
+
+Acgan 卡通头像生成，人脸生成
+
+Pix2pix 轮廓生成图像，图像上色
+
+Cyclegan 两类图像转换，苹果橘子
+
