@@ -33,6 +33,7 @@ fer2013数据集，keras建立的一个图像分类模型，保护录像转录�
  the iNaturalist Species Detection Dataset 自然界各种生物
  and the Snapshot Serengeti Dataset。 盖伦蒂亚动物园野生动物
 
+Cpm 关键点检测 ：服饰关键点
 
 
 
