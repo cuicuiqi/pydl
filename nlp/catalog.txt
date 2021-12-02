@@ -1,0 +1,17 @@
+word2vec gensim实现和tf2的实现，需要语料或模型
+
+wordcut 分词jieba的官方介绍
+
+Siamese network 孪生网络 多应用于语句相似度计算、人脸匹配、签名鉴别等任务上 效率比bert高
+
+char_rnn 字符生成，歌词古诗生成。keras组网，tf古诗生成；现成的轮子：textgenrnn
+
+text_classification 情感分类任务，keras
+
+Img2txt 有两个git版本，tf1较老，基于图片生成描述或标题，图片使用vgg提取，引入注意力机制，rnn组网、训练方式。
+
+Seq2seq tf官网示例nmt，实现翻译功能。包括语句对转换功能。包含注意力机制。包含keras例子。
+
+speech2text 语音转文字 基于keras，语音频谱展示，mfcc，组网
+
+Tacotron2 文字生成语音 tf版 支持Tacotron2

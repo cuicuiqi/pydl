@@ -1,0 +1,8 @@
+
+#对联生成
+
+#https://github.com/wb14123/couplet-dataset
+
+#cp iwslt15.json couplet.json
+
+#python -m nmt.nmt --src=in --tgt=out --vocab_prefix=couplet/vocab --train_prefix=couplet/train --dev_prefix=couplet/test --test_prefix=couplet/test --out_dir=model_couplet --hparams_path=nmt/standard_hparams/couplet.json
