@@ -15,3 +15,16 @@ Seq2seq tf官网示例nmt，实现翻译功能。包括语句对转换功能。�
 speech2text 语音转文字 基于keras，语音频谱展示，mfcc，组网
 
 Tacotron2 文字生成语音 tf版 支持Tacotron2
+
+nb_faq 读取mysql httpserver 数据清洗预处理 停用词 gensim
+
+Chatbot 利用chatbot训练，回答问答对
+
+Ner 电子病历实体识别：bilstm版本和idcnn版本两种实现，flask；
+    keras实现bilstm+crf 人地点组织识别
+    keras实现bilstm+crf 药物疾病等识别
+
+
+BERT-BiLSTM-CRF-NER-master  封装了bert，提供了ner和分类任务，还提供了一个c/s serving,可升级flask
+
+
