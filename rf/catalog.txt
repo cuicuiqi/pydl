@@ -1,0 +1,11 @@
+DeepLearningFlappyBird-master dqn玩flappybird
+
+Q-learning 基础版q-learning
+
+Sarsa 基础版sarsa
+
+Dqn 封装较好的dqn，玩atari，可参考学习继承、对象封装设计
+
+policy_gradient 玩cartpole,tf.gradients用法,直接学习动作概率，适用长回合类
+
+Reinforcement-learning-with-tensorflow-master 莫烦强化学习，包括多种算法
