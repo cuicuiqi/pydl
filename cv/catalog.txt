@@ -39,5 +39,16 @@ Opencv摄像头读取和绘制
 fer2013数据集，keras建立的一个图像分类模型，保护录像转录库，cv摄像头加标签名代码
 
 
+93_人脸编辑
+
+Stylegan 生成人脸，tf-keras 需要GPU 可以细粒度的控制生成的部分特征和随机值，包含了ffhq新的人脸数据集7w
+
+ALAE-torch style gan改进，生成人脸等数据集，torch版本
+
+Hairstyle-Transfer-master 整合了几种技术来编辑头发，用stylegan生成图片，反向训练得到给定图片的latent code 下载打分评估器，给图片特征打分，送入interfacegan进行训练、得到超平面，并编辑
+
+
+
+
 
 

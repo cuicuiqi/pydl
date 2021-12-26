@@ -1,0 +1,11 @@
+%tensorflow_version 1.x
+import tensorflow as tf
+print(tf.version)
+
+!nvcc --version
+
+cd stylegan/
+
+ls
+
+!python run_metrics.py

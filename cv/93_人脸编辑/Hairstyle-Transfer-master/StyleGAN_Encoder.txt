@@ -1,0 +1,237 @@
+!pip install --upgrade tqdm
+
+import os 
+os.kill(os.getpid(), 9)
+
+%tensorflow_version 1.x
+import tensorflow as tf
+print(tf.__version__)
+
+!rm -rf sample_data
+!rm -rf stylegan-encoder
+
+!git clone https://github.com/Azmarie/stylegan-encoder.git
+
+cd stylegan-encoder
+
+ls
+
+rm -rf aligned_images raw_images
+
+mkdir aligned_images raw_images
+
+from IPython.display import HTML, Audio
+from google.colab.output import eval_js
+from base64 import b64decode
+import numpy as np
+import io
+from PIL import Image
+from datetime import datetime
+
+VIDEO_HTML = """
+<video autoplay
+ width=%d height=%d style='cursor: pointer;'></video>
+<script>
+
+var video = document.querySelector('video')
+
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream=> video.srcObject = stream)
+  
+var data = new Promise(resolve=>{
+  video.onclick = ()=>{
+    var canvas = document.createElement('canvas')
+    var [w,h] = [video.offsetWidth, video.offsetHeight]
+    canvas.width = w
+    canvas.height = h
+    canvas.getContext('2d')
+          .drawImage(video, 0, 0, w, h)
+    video.srcObject.getVideoTracks()[0].stop()
+    video.replaceWith(canvas)
+    resolve(canvas.toDataURL('image/jpeg', %f))
+  }
+})
+</script>
+"""
+
+def take_photo(quality=1.0, size=(800,600)):
+  display(HTML(VIDEO_HTML % (size[0],size[1],quality)))
+  data = eval_js("data")
+  binary = b64decode(data.split(',')[1])
+  f = io.BytesIO(binary)
+  img = np.asarray(Image.open(f))
+  
+  timestampStr = datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")
+  filename = 'raw_images/photo_%s.jpeg' %timestampStr
+  Image.fromarray(img).save(filename)
+  print('Image captured and saved to %s' %filename)
+
+img = take_photo() # click the image to capture a frame!
+
+rm -r raw_images/.ipynb_checkpoints
+
+from PIL import Image
+import os
+imgs = sorted(os.listdir('raw_images'))
+
+print("Found %d images in %s" %(len(imgs), 'raw_images'))
+if len(imgs) == 0:
+  print("Upload images to the \"raw_images\" folder!")
+else:
+  print(imgs)
+
+for img_path in imgs:
+  img = Image.open('raw_images/' + img_path)
+  
+  w,h = img.size
+  rescale_ratio = 256 / min(w,h)
+  img = img.resize((int(rescale_ratio*w),int(rescale_ratio*h)), Image.LANCZOS)
+  display(img)
+
+!python align_images.py raw_images/ aligned_images/ --output_size=1024
+
+def display_folder_content(folder, res = 256):
+  if folder[-1] != '/': folder += '/'
+  for i, img_path in enumerate(sorted(os.listdir(folder))):
+    if '.png' in img_path:
+      display(Image.open(folder+img_path).resize((res,res)), 'img %d: %s' %(i, img_path))
+      print('\n')
+      
+display_folder_content('aligned_images')
+
+!gdown https://drive.google.com/uc?id=1aT59NFy9-bNyXjDuZOTMl0qX0jmZc6Zb
+!mkdir data
+!mv finetuned_resnet.h5 data
+!rm -rf generated_images latent_representations
+
+import os
+print("aligned_images contains %d images ready for encoding!" %len(os.listdir('aligned_images/')))
+print("Recommended batch_size for the encode_images process: %d" %min(len(os.listdir('aligned_images/')), 8))
+
+!python encode_images.py --optimizer=lbfgs --face_mask=False --iterations=50 --use_lpips_loss=0 --use_discriminator_loss=0 --output_video=True aligned_images/ generated_images/ latent_representations/
+print("\n************ Latent code optimization finished! ***************")
+
+import tensorflow as tf
+tf.test.gpu_device_name()
+
+# memory footprint support libraries/code
+!ln -sf /opt/bin/nvidia-smi /usr/bin/nvidia-smi
+!pip install gputil
+!pip install psutil
+!pip install humanize
+import psutil
+import humanize
+import os
+import GPUtil as GPU
+GPUs = GPU.getGPUs()
+# XXX: only one GPU on Colab and isn’t guaranteed
+gpu = GPUs[0]
+def printm():
+ process = psutil.Process(os.getpid())
+ print("Gen RAM Free: " + humanize.naturalsize( psutil.virtual_memory().available ), " | Proc size: " + humanize.naturalsize( process.memory_info().rss))
+ print("GPU RAM Free: {0:.0f}MB | Used: {1:.0f}MB | Util {2:3.0f}% | Total {3:.0f}MB".format(gpu.memoryFree, gpu.memoryUsed, gpu.memoryUtil*100, gpu.memoryTotal))
+printm() 
+
+!kill -9 -1
+
+!python encode_images.py --optimizer=adam --lr=0.02 --decay_rate=0.95 --decay_steps=6 --use_l1_penalty=0.3 --face_mask=True --iterations=400 --early_stopping=True --early_stopping_threshold=0.05 --average_best_loss=0.5 --use_lpips_loss=0 --use_discriminator_loss=0 --output_video=True aligned_images/ generated_images/ latent_representations/
+print("\n************ Latent code optimization finished! ***************")
+
+import os
+import dnnlib, pickle
+import dnnlib.tflib as tflib
+tflib.init_tf()
+synthesis_kwargs = dict(output_transform=dict(func=tflib.convert_images_to_uint8, nchw_to_nhwc=True), minibatch_size=1)
+
+model_dir = 'cache/'
+model_path = [model_dir+f for f in os.listdir(model_dir) if 'stylegan-ffhq' in f][0]
+print("Loading StyleGAN model from %s..." %model_path)
+
+with dnnlib.util.open_url(model_path) as f:
+  generator_network, discriminator_network, averaged_generator_network = pickle.load(f)
+  
+print("StyleGAN loaded & ready for sampling!")
+
+def generate_images(generator, latent_vector, z = True):
+    batch_size = latent_vector.shape[0]
+    
+    if z: #Start from z: run the full generator network
+        return generator.run(latent_vector.reshape((batch_size, 512)), None, randomize_noise=False, **synthesis_kwargs)
+    else: #Start from w: skip the mapping network
+        return generator.components.synthesis.run(latent_vector.reshape((batch_size, 18, 512)), randomize_noise=False, **synthesis_kwargs)
+
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+import numpy as np
+def plot_imgs(model, rows, columns):
+  for i in range(rows):
+    f, axarr = plt.subplots(1,columns, figsize = (20,8))
+    for j in range(columns):
+      img = generate_images(model, np.random.randn(1,512), z = True)[0]
+      axarr[j].imshow(img)
+      axarr[j].axis('off')
+      axarr[j].set_title('Resolution: %s' %str(img.shape))
+    plt.show()
+
+plot_imgs(averaged_generator_network, 3, 3)
+
+import numpy as np
+
+for f in sorted(os.listdir('latent_representations')):
+  w = np.load('latent_representations/' + f).reshape((1,18,-1))
+  img = generate_images(averaged_generator_network, w, z = False)[0]
+  plt.imshow(img)
+  plt.axis('off')
+  plt.title("Generated image from %s" %f)
+  plt.show()
+
+import matplotlib.pyplot as plt
+from PIL import Image
+
+def plot_two_images(img1,img2, img_id, fs = 12):
+  f, axarr = plt.subplots(1,2, figsize=(fs,fs))
+  axarr[0].imshow(img1)
+  axarr[0].title.set_text('Encoded img %d' %img_id)
+  axarr[1].imshow(img2)
+  axarr[1].title.set_text('Original img %d' %img_id)
+  plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])
+  plt.show()
+
+def display_sbs(folder1, folder2, res = 256):
+  if folder1[-1] != '/': folder1 += '/'
+  if folder2[-1] != '/': folder2 += '/'
+    
+  imgs1 = sorted([f for f in os.listdir(folder1) if '.png' in f])
+  imgs2 = sorted([f for f in os.listdir(folder2) if '.png' in f])
+  if len(imgs1)!=len(imgs2):
+    print("Found different amount of images in aligned vs raw image directories. That's not supposed to happen...")
+  
+  for i in range(len(imgs1)):
+    img1 = Image.open(folder1+imgs1[i]).resize((res,res))
+    img2 = Image.open(folder2+imgs2[i]).resize((res,res))
+    plot_two_images(img1,img2, i)
+    print("")
+     
+display_sbs('generated_images/', 'aligned_images/', res = 512)
+
+good_images = [0,1,2,3]  #Change these numbers to pick out latents that worked well (see the image plots)
+
+import numpy as np
+latents = sorted(os.listdir('latent_representations'))
+
+out_file = '/content/output_vectors.npy'
+
+final_w_vectors = []
+for img_id in good_images:
+  w = np.load('latent_representations/' + latents[img_id])
+  final_w_vectors.append(w)
+
+final_w_vectors = np.array(final_w_vectors)
+np.save(out_file, final_w_vectors)
+print("%d latent vectors of shape %s saved to %s!" %(len(good_images), str(w.shape), out_file))
+
+from google.colab import drive
+drive.mount('/content/gdrive')
+
+!cp /content/output_vectors.npy '/content/gdrive/My Drive/'
