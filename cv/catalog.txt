@@ -18,7 +18,12 @@
 
 31_Cpm 关键点检测 服饰关键点
 
+51_GFM 抠图模型，扣动物，还提供了一个背景数据集 基于torch
 
+52_MODNet-master 抠图模型，扣人像，速度快，提供colab版本、onnx版本模型, 基于torch
+
+
+71_first-order-model-master 第一运动模型，一幅图片+视频，让图片动起来
 
 
 
