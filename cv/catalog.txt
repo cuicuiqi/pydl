@@ -23,7 +23,11 @@
 52_MODNet-master 抠图模型，扣人像，速度快，提供colab版本、onnx版本模型, 基于torch
 
 
+
+
 71_first-order-model-master 第一运动模型，一幅图片+视频，让图片动起来
+
+72_iPERCore-main 动作迁移、新视角合成、外观迁移. 可以利用多张源图片。外观迁移做换装
 
 
 
@@ -52,8 +56,7 @@ ALAE-torch style gan改进，生成人脸等数据集，torch版本
 
 Hairstyle-Transfer-master 整合了几种技术来编辑头发，用stylegan生成图片，反向训练得到给定图片的latent code 下载打分评估器，给图片特征打分，送入interfacegan进行训练、得到超平面，并编辑
 
-
-
+StyleFlow-master 人脸编辑，基于stylegan，摄像角度、光照变化、性别、年龄、发型
 
 
 
