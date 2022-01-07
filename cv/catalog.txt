@@ -27,7 +27,7 @@
 
 
 61_mdetr-main 多模态 根据文本和图片，找到图片中的物体，包括物体定位、语义分割、问答定位
-
+62_dalle-mini-main 多模态 根据文本生成图片， 涉及多种模型：vqgan 产生图片的token和训练标签；bart用来产生图片描述编码；clip选择图片
 
 
 71_first-order-model-master 第一运动模型，一幅图片+视频，让图片动起来
