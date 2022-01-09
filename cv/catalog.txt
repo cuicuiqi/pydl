@@ -19,6 +19,7 @@
 31_Cpm 关键点检测 服饰关键点
 
 
+41_StyleCariGAN-master 从普通头像生成卡通头像，基于styleGAN；环境安装过程极其复杂，需要vs studio->dlib >ninja 最后没跑通ImportError: DLL load failed while importing fused: 找不到指定的模块，建议docker装
 
 
 51_GFM 抠图模型，扣动物，还提供了一个背景数据集 基于torch
@@ -38,7 +39,6 @@
 
 
 81_openpose 成熟的系统，包括2d和3d，身体姿势识别、手部识别、脸部识别，系统配置要求较高，只包含了readme，详见官网
-
 
 
 
