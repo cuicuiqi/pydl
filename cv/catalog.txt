@@ -20,6 +20,7 @@
 
 
 41_StyleCariGAN-master 从普通头像生成卡通头像，基于styleGAN；环境安装过程极其复杂，需要vs studio->dlib >ninja 最后没跑通ImportError: DLL load failed while importing fused: 找不到指定的模块，建议docker装
+42_stylized-neural-painting-main 生产油画版本的图片，并带生成过程。还有记号笔水彩笔版本。另结合另一幅图片，可以做风格转换。
 
 
 51_GFM 抠图模型，扣动物，还提供了一个背景数据集 基于torch
@@ -62,6 +63,10 @@ ALAE-torch style gan改进，生成人脸等数据集，torch版本
 Hairstyle-Transfer-master 整合了几种技术来编辑头发，用stylegan生成图片，反向训练得到给定图片的latent code 下载打分评估器，给图片特征打分，送入interfacegan进行训练、得到超平面，并编辑
 
 StyleFlow-master 人脸编辑，基于stylegan，摄像角度、光照变化、性别、年龄、发型
+
+
+94_faceswap-master 换脸，包含三个步骤：提取、训练、转换。支持从视频提取图片，保护多种模型（keras）。有一个ui界面，也支持docker 命令行。关键参数：allow_growth = True
+		比较坑的是numpy版本，提取、转换需要最新版1.22.0；训练需要和tf配对(tf24->1.19.2)
 
 
 
