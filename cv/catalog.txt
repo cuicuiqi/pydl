@@ -36,6 +36,8 @@
 
 72_iPERCore-main 动作迁移、新视角合成、外观迁移. 可以利用多张源图片。外观迁移做换装
 
+73_LiveSpeechPortraits-main 根据语音合成嘴型、头部、上半身视频。需要4张图片,目前有obama，may等模型合成，使用了rnn和img transformer等。
+修复了bug：https://github.com/YuanxunLu/LiveSpeechPortraits/pull/38
 
 
 
