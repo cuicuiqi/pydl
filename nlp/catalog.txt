@@ -27,4 +27,5 @@ Ner 电子病历实体识别：bilstm版本和idcnn版本两种实现，flask；
 
 BERT-BiLSTM-CRF-NER-master  封装了bert，提供了ner和分类任务，还提供了一个c/s serving,可升级flask
 
-
+MockingBird-main 语音合成模型   根据几秒的录音，合成含有一个人声纹特点的一句话。保护一个toolbox和一个flask驱动的web程序。
+https://pan.baidu.com/s/1iONvRxmkI-t1nHqxKytY3g Baidu 4j5d
