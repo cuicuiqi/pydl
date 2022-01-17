@@ -304,7 +304,7 @@ class FaceDataset(BaseDataset):
             for j in range(num - 1):
                 pt1 = [int(flt) for flt in shoulder_points[i * num + j]]
                 pt2 = [int(flt) for flt in shoulder_points[i * num + j + 1]]
-                img = cv2.line(img, tuple(pt1), tuple(pt2), (0, 0, 255), 2)  # BGR
+                img = cv2.line(img, tuple(pt1), tuple(pt2), 255, 2)  # BGR
         
         return img
 
@@ -318,7 +318,7 @@ class FaceDataset(BaseDataset):
                 for i in range(len(edge)-1):
                     pt1 = [int(flt) for flt in keypoints[edge[i]]]
                     pt2 = [int(flt) for flt in keypoints[edge[i + 1]]]
-                    im_edges = cv2.line(im_edges, tuple(pt1), tuple(pt2), (0, 0, 255), 2)
+                    im_edges = cv2.line(im_edges, tuple(pt1), tuple(pt2), 255, 2)
             
         return im_edges
 

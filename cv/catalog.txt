@@ -42,7 +42,7 @@
 
 
 81_openpose 成熟的系统，包括2d和3d，身体姿势识别、手部识别、脸部识别，系统配置要求较高，只包含了readme，详见官网
-
+82_kalidokit-main   Facemesh, Blazepose, Handpose, and Holistic 集成脸部、身体、手的形态检测，驱动卡通人物运动等。基于tf-js或holistic。JS版本的，可以用来生成vtuber
 
 
 91_人脸识别
@@ -70,5 +70,5 @@ StyleFlow-master 人脸编辑，基于stylegan，摄像角度、光照变化、�
 94_faceswap-master 换脸，包含三个步骤：提取、训练、转换。支持从视频提取图片，保护多种模型（keras）。有一个ui界面，也支持docker 命令行。关键参数：allow_growth = True
 		比较坑的是numpy版本，提取、转换需要最新版1.22.0；训练需要和tf配对(tf24->1.19.2)
 
-
+95_hyperstyle-main 基于stylegan2的人脸编辑生成，效果不错，可编辑年龄、卡通脸，做融合等。
 
