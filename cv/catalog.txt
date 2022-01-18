@@ -24,12 +24,13 @@
 
 
 51_GFM 抠图模型，扣动物，还提供了一个背景数据集 基于torch
-
 52_MODNet-master 抠图模型，扣人像，速度快，提供colab版本、onnx版本模型, 基于torch
 
 
 61_mdetr-main 多模态 根据文本和图片，找到图片中的物体，包括物体定位、语义分割、问答定位
 62_dalle-mini-main 多模态 根据文本生成图片， 涉及多种模型：vqgan 产生图片的token和训练标签；bart用来产生图片描述编码；clip选择图片
+63_NUWA-main 微软还没开源的女娲，可以文本生成图片，草图到图片，图片补全，图片修改。效果超dallE
+64_glide-text2im-main openAI开源的多模态应用，主要有三个方向，从文本到图片，图片修补，图片修改。和女娲类似。
 
 
 71_first-order-model-master 第一运动模型，一幅图片+视频，让图片动起来
@@ -71,4 +72,4 @@ StyleFlow-master 人脸编辑，基于stylegan，摄像角度、光照变化、�
 		比较坑的是numpy版本，提取、转换需要最新版1.22.0；训练需要和tf配对(tf24->1.19.2)
 
 95_hyperstyle-main 基于stylegan2的人脸编辑生成，效果不错，可编辑年龄、卡通脸，做融合等。
-
+96_JoJoGAN-main 基于stylegan漫画人脸生成，可生成漫画风格人脸，经过fineturn，可以用自己的style image。
